@@ -43,6 +43,13 @@ public:
 	{
 		// TODO: add your implementation here.
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
+		
+		
+		// add to freelist, add to dense array, increase m_meshCount
+		// MeshID should save index in freelist and generation?
+		// freelist needs to store IN PLACE, so no vector, list etc allowed
+		m_meshCount++;
+		
 		return 0;
 	}
 
@@ -52,6 +59,10 @@ public:
 	{
 		// TODO: add your implementation here.
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
+		
+		
+		// switch with last object in dense array, remove from dense array and free list decrease m_meshCount, increase generation of object
+		// correct pointer in free list do dense array
 	}
 
 
@@ -60,6 +71,9 @@ public:
 	{
 		// TODO: add your implementation here.
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
+		
+		
+		// access free list with MeshID, use information from free list to get entry in dense array
 		return nullptr;
 	}
 
