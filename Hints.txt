@@ -1,0 +1,16 @@
+Creating and destroying components should be an O(1) operation. If not, performance could severely deteriorate after playing for several hours, or when creating lots of components.
+Iterating over all components in order to update them should cause as few cache misses as possible. Therefore all items should be packed densely and contiguous in memory, like an array.
+
+Instead of using either a free-list or an array, we will in fact use both: a sparse array managed by a free-list, and a dense array that holds the individual components.
+The sparse (outer) array stores indices into the dense (inner) array, and a generation for each item. This generation is our monotonically increasing integer that was
+introduced last time. The dense array stores the items contiguously in memory, just like a regular array.
+
+Components in such an array are not referenced by handles, but by so-called IDs. An ID stores an index into the sparse array, along with the generation at the time of creation.
+
+Creating a component consists of adding a new component at the end of the dense array (O(1)), and allocating a new slot in the sparse array using an in-place free-list (O(1)).
+The slot stores an index into the inner array, and the user holds on to an ID that is a „smart index“ into the outer array (O(1)).
+Destroying a component means that the slot depicted by the ID needs to be returned to the free-list (O(1)), and that the component needs to be removed from the inner array.
+This can be done in O(1) by simply swapping the removed component with the last in the array, properly updating the corresponding index from the outer to the inner array as well.
+Accessing a component causes an additional cache-miss because of the extra indirection: we first need to access the sparse array in order to fetch the index,
+and retrieve the component from the inner array using that index.
+Iterating over all components is a simple for-loop over the dense array, causing the least number of cache-misses possible.
