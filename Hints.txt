@@ -14,3 +14,7 @@ This can be done in O(1) by simply swapping the removed component with the last 
 Accessing a component causes an additional cache-miss because of the extra indirection: we first need to access the sparse array in order to fetch the index,
 and retrieve the component from the inner array using that index.
 Iterating over all components is a simple for-loop over the dense array, causing the least number of cache-misses possible.
+
+
+https://blog.molecular-matters.com/2012/09/17/memory-allocation-strategies-a-pool-allocator/
+https://blog.molecular-matters.com/2013/05/17/adventures-in-data-oriented-design-part-3b-internal-references/
