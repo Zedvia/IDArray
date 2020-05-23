@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
+#include <vector>
 
 
 // DO NOT CHANGE THE UNDERLYING TYPE!
@@ -43,14 +44,24 @@ public:
 	{
 		// TODO: add your implementation here.
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
+		Mesh mesh{};
+		m_meshes[m_meshCount] = mesh;
+
+		sparse_id_mask mask{};
+		mask.index = m_meshCount;
+		mask.generation = 0; // todo vorher holen und dann grüßer oder so
 		
+		m_sparse_array.emplace_back(mask);
+		
+		MeshID ID = ((m_sparse_array.size() - 1) << 24) + mask.generation; // todo change m_meshcount
+		MeshID* IDP = &ID;
 		
 		// add to freelist, add to dense array, increase m_meshCount
 		// MeshID should save index in freelist and generation?
 		// freelist needs to store IN PLACE, so no vector, list etc allowed
 		m_meshCount++;
-		
-		return 0;
+
+		return ID;
 	}
 
 
@@ -71,7 +82,13 @@ public:
 	{
 		// TODO: add your implementation here.
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
+
+		MeshID* IDP = &id;
 		
+		uint32_t index = (id & index_mask) >> 24;
+		uint32_t* test = &index;
+		uint32_t generation = (id & generation_mask);
+
 		
 		// access free list with MeshID, use information from free list to get entry in dense array
 		return nullptr;
@@ -94,8 +111,17 @@ public:
 
 
 private:
-	// TODO: add other data structures you may need
+	unsigned int index_mask = 0xFF000000;
+	unsigned int generation_mask = 0x00FFFFFF;
+	
+	struct sparse_id_mask
+	{
+		uint32_t index : 8,
+		    generation : 24;
+	};
 
+	std::vector<sparse_id_mask> m_sparse_array;
+	
 	// DO NOT CHANGE!
 	// these two members are here to stay. see comments regarding Iterate().
 	Mesh m_meshes[MAX_MESH_COUNT];
