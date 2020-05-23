@@ -74,7 +74,7 @@ public:
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
 
 
-		sparse_id_mask meshID;
+		sparse_id_mask meshID{};
 		meshID.index = (id & index_mask) >> generationSize;
 		meshID.generation = (id & generation_mask);
 		// checken ob generation gleich
@@ -103,7 +103,7 @@ public:
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
 		
 		
-		sparse_id_mask meshID;
+		sparse_id_mask meshID{};
 		meshID.index = (id & index_mask) >> generationSize;
 		meshID.generation = (id & generation_mask);
 		
