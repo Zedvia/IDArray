@@ -46,6 +46,7 @@ public:
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
 		Mesh mesh{};
 		m_meshes[m_meshCount] = mesh;
+		
 
 		sparse_id_mask mask{};
 		mask.index = m_meshCount;
@@ -53,7 +54,9 @@ public:
 		
 		m_sparse_array.emplace_back(mask);
 		
-		MeshID ID = ((m_sparse_array.size() - 1) << 24) + mask.generation; // todo change m_meshcount
+		MeshID ID = ((m_sparse_array.size() - 1) << generationSize) + mask.generation; // todo change m_meshcount
+
+		m_denseToSparse[m_meshCount] = m_sparse_array.size() - 1;
 		
 		// add to freelist, add to dense array, increase m_meshCount
 		// MeshID should save index in freelist and generation?
@@ -69,10 +72,27 @@ public:
 	{
 		// TODO: add your implementation here.
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
-		
-		
-		// switch with last object in dense array, remove from dense array and free list decrease m_meshCount, increase generation of object
-		// correct pointer in free list do dense array
+
+
+		sparse_id_mask meshID;
+		meshID.index = (id & index_mask) >> generationSize;
+		meshID.generation = (id & generation_mask);
+		// checken ob generation gleich
+		sparse_id_mask entry = m_sparse_array[meshID.index];
+
+		if (entry.generation == meshID.generation)
+		{
+			// mesh mit letzten im dense swappen
+			std::swap(m_meshes[entry.index], m_meshes[m_meshCount-1]);
+			// in sparse für geswappten mesh index aktualisieren
+			m_sparse_array[m_denseToSparse[m_meshCount-1]].index = entry.index;
+			// in sparse generation erhöhen
+			m_sparse_array[m_denseToSparse[meshID.index]].generation++;
+			// denseToSparse aktualisieren
+			std::swap(m_denseToSparse[m_meshCount-1], m_denseToSparse[meshID.index]);
+			// m_meshCount reduzieren
+			m_meshCount--;
+		}
 	}
 
 
@@ -82,11 +102,21 @@ public:
 		// TODO: add your implementation here.
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
 		
-		uint32_t index = (id & index_mask) >> 24;
-		uint32_t generation = (id & generation_mask);
-
 		
-		// access free list with MeshID, use information from free list to get entry in dense array
+		sparse_id_mask meshID;
+		meshID.index = (id & index_mask) >> generationSize;
+		meshID.generation = (id & generation_mask);
+		
+		//uint8_t index = (id & index_mask) >> generationSize;
+		//uint32_t generation = (id & generation_mask);
+
+		sparse_id_mask entry = m_sparse_array[meshID.index];
+
+		if(entry.generation == meshID.generation)
+		{
+			return &m_meshes[entry.index];
+		}
+		
 		return nullptr;
 	}
 
@@ -109,14 +139,17 @@ public:
 private:
 	unsigned int index_mask = 0xFF000000;
 	unsigned int generation_mask = 0x00FFFFFF;
+	static const unsigned short indexSize = 8;
+	static const unsigned short generationSize = 24;
 	
 	struct sparse_id_mask
 	{
-		uint32_t index : 8,
-		    generation : 24;
+		uint32_t index : indexSize,
+		    generation : generationSize;
 	};
 
 	std::vector<sparse_id_mask> m_sparse_array;
+	uint32_t m_denseToSparse[MAX_MESH_COUNT];
 	
 	// DO NOT CHANGE!
 	// these two members are here to stay. see comments regarding Iterate().
