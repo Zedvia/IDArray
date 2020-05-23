@@ -54,7 +54,6 @@ public:
 		m_sparse_array.emplace_back(mask);
 		
 		MeshID ID = ((m_sparse_array.size() - 1) << 24) + mask.generation; // todo change m_meshcount
-		MeshID* IDP = &ID;
 		
 		// add to freelist, add to dense array, increase m_meshCount
 		// MeshID should save index in freelist and generation?
@@ -82,11 +81,8 @@ public:
 	{
 		// TODO: add your implementation here.
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
-
-		MeshID* IDP = &id;
 		
 		uint32_t index = (id & index_mask) >> 24;
-		uint32_t* test = &index;
 		uint32_t generation = (id & generation_mask);
 
 		
