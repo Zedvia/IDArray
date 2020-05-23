@@ -137,8 +137,8 @@ public:
 
 
 private:
-	unsigned int index_mask = 0xFF000000;
-	unsigned int generation_mask = 0x00FFFFFF;
+	static const unsigned int index_mask = 0xFF000000;
+	static const unsigned int generation_mask = 0x00FFFFFF;
 	static const unsigned short indexSize = 8;
 	static const unsigned short generationSize = 24;
 	
