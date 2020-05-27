@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
+#include <queue>
 #include <vector>
 
 
@@ -36,6 +37,11 @@ public:
 	RenderWorld(void)
 		: m_meshCount(0)
 	{
+		//Hier wird ein uint16_t benutzt um die for Bedingung auch erfüllen zu können, mit einem uint8_t wären wir hier in einem unendlichen loop
+		for (uint16_t i = 0; i < MAX_MESH_COUNT; ++i)
+		{
+			m_open_ids.emplace_back(i);
+		}
 	}
 
 
@@ -44,23 +50,29 @@ public:
 	{
 		// TODO: add your implementation here.
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
-		Mesh mesh{};
-		m_meshes[m_meshCount] = mesh;
-		
 
+		//Mesh wird an die richtige Stelle im m_meshes (dense) array gespeichert
+		m_meshes[m_meshCount] = Mesh();
+
+		//nächste freie ID im m_sparse_array wird geholt
+		uint8_t free_id = m_open_ids.front();
+		m_open_ids.pop_front();
+
+		//Daten für sparse_array werden geschrieben: position im dense array und generation
 		sparse_id_mask mask{};
 		mask.index = m_meshCount;
-		mask.generation = 0; // todo vorher holen und dann grüßer oder so
+		mask.generation = m_sparse_array[free_id].generation;
 		
-		m_sparse_array.emplace_back(mask);
-		
-		MeshID ID = ((m_sparse_array.size() - 1) << generationSize) + mask.generation; // todo change m_meshcount
+		m_sparse_array[free_id] = mask;
 
-		m_denseToSparse[m_meshCount] = m_sparse_array.size() - 1;
+		//MeshID wird mit der Generation und dem Index im Sparse Array befüllt
+		MeshID ID = ((free_id) << generationSize) + mask.generation;
+
+		//dense to sparse array wird am index des meshes, welches das mesh auch im dense array hat,
+		//mit der id für den Eintrag im sparse array befüllt um Zugriff in beide Richtungen zu ermöglichen
+		m_denseToSparse[m_meshCount] = free_id;
 		
-		// add to freelist, add to dense array, increase m_meshCount
-		// MeshID should save index in freelist and generation?
-		// freelist needs to store IN PLACE, so no vector, list etc allowed
+		// m_meshCount erhöhen damit neue Meshes an die richtige Stelle geaddet werden
 		m_meshCount++;
 
 		return ID;
@@ -73,7 +85,7 @@ public:
 		// TODO: add your implementation here.
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
 
-
+		// Mask generieren um auf index und generation zugreifen zu können
 		sparse_id_mask meshID{};
 		meshID.index = (id & index_mask) >> generationSize;
 		meshID.generation = (id & generation_mask);
@@ -82,15 +94,17 @@ public:
 
 		if (entry.generation == meshID.generation)
 		{
-			// mesh mit letzten im dense swappen
+			// mesh mit letzten im dense swappen um leere Einträge zu vermeiden
 			std::swap(m_meshes[entry.index], m_meshes[m_meshCount-1]);
-			// in sparse für geswappten mesh index aktualisieren
+			// in sparse für geswappten mesh index aktualisieren um Zugriff für geswapptes Element wieder zu ermöglichen
 			m_sparse_array[m_denseToSparse[m_meshCount-1]].index = entry.index;
-			// in sparse generation erhöhen
+			// in sparse generation erhöhen um die MeshID zu invalidieren
 			m_sparse_array[m_denseToSparse[meshID.index]].generation++;
-			// denseToSparse aktualisieren
+			// sparse id freimachen damit sie wieder verwendet werden kann
+			m_open_ids.emplace_front(static_cast<uint8_t>(meshID.index));
+			// denseToSparse aktualisieren um Mapping aktuell zu halten
 			std::swap(m_denseToSparse[m_meshCount-1], m_denseToSparse[meshID.index]);
-			// m_meshCount reduzieren
+			// m_meshCount reduzieren damit neue Meshes an die richtige Stelle geaddet werden
 			m_meshCount--;
 		}
 	}
@@ -102,16 +116,14 @@ public:
 		// TODO: add your implementation here.
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
 		
-		
+		// Mask generieren um auf index und generation zugreifen zu können
 		sparse_id_mask meshID{};
 		meshID.index = (id & index_mask) >> generationSize;
 		meshID.generation = (id & generation_mask);
-		
-		//uint8_t index = (id & index_mask) >> generationSize;
-		//uint32_t generation = (id & generation_mask);
 
 		sparse_id_mask entry = m_sparse_array[meshID.index];
 
+		//Mesh nur zurückliefern wenn generation noch gleich ist, andernfalls wurde das Objekt mit dieser MeshID bereits gelöscht/ersetzt
 		if(entry.generation == meshID.generation)
 		{
 			return &m_meshes[entry.index];
@@ -148,7 +160,8 @@ private:
 		    generation : generationSize;
 	};
 
-	std::vector<sparse_id_mask> m_sparse_array;
+	std::deque<uint8_t> m_open_ids;
+	sparse_id_mask m_sparse_array[MAX_MESH_COUNT];
 	uint32_t m_denseToSparse[MAX_MESH_COUNT];
 	
 	// DO NOT CHANGE!
