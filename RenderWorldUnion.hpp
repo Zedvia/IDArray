@@ -158,10 +158,7 @@ public:
 
 private:
 
-
-
-	//Container um alle notwendigen Daten zu speichern, deque um auch den sparse_array so gepackt wie möglich zu halten
-	std::deque<uint8_t> m_open_ids;
+	//Container um alle notwendigen Daten zu speichern
 	id_struct m_sparse_array[MAX_MESH_COUNT];
 	uint32_t m_denseToSparse[MAX_MESH_COUNT];
 
@@ -169,4 +166,7 @@ private:
 	// these two members are here to stay. see comments regarding Iterate().
 	Mesh m_meshes[MAX_MESH_COUNT];
 	unsigned int m_meshCount;
+
+	// deque um auch den sparse_array so gepackt wie möglich zu halten
+	std::deque<uint8_t> m_open_ids;
 };

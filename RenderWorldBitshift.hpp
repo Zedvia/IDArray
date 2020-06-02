@@ -60,7 +60,7 @@ public:
 		m_sparse_array[free_id] = mask;
 
 		//MeshID wird mit der Generation und dem Index im Sparse Array bef�llt
-		MeshID ID = ((free_id) << generationSize) + mask.generation;
+		MeshID ID = ((free_id) << generation_size) + mask.generation;
 
 		//dense to sparse array wird am index des meshes, welches das mesh auch im dense array hat,
 		//mit der id f�r den Eintrag im sparse array bef�llt um Zugriff in beide Richtungen zu erm�glichen
@@ -81,7 +81,7 @@ public:
 
 		// Mask generieren um auf index und generation zugreifen zu können
 		sparse_id_mask meshID{};
-		meshID.index = (id & index_mask) >> generationSize;
+		meshID.index = (id & index_mask) >> generation_size;
 		meshID.generation = (id & generation_mask);
 		// checken ob generation gleich
 		sparse_id_mask entry = m_sparse_array[meshID.index];
@@ -112,7 +112,7 @@ public:
 
 		// Mask generieren um auf index und generation zugreifen zu können
 		sparse_id_mask meshID{};
-		meshID.index = (id & index_mask) >> generationSize;
+		meshID.index = (id & index_mask) >> generation_size;
 		meshID.generation = (id & generation_mask);
 
 		sparse_id_mask entry = m_sparse_array[meshID.index];
@@ -145,21 +145,24 @@ public:
 private:
 	static const unsigned int index_mask = 0xFF000000;
 	static const unsigned int generation_mask = 0x00FFFFFF;
-	static const unsigned short indexSize = 8;
-	static const unsigned short generationSize = 24;
-
-	struct sparse_id_mask
-	{
-		uint32_t index : indexSize,
-			generation : generationSize;
-	};
-
-	std::deque<uint8_t> m_open_ids;
-	sparse_id_mask m_sparse_array[MAX_MESH_COUNT];
-	uint32_t m_denseToSparse[MAX_MESH_COUNT];
+	static const unsigned short index_size = 8;
+	static const unsigned short generation_size = 24;
 
 	// DO NOT CHANGE!
 	// these two members are here to stay. see comments regarding Iterate().
 	Mesh m_meshes[MAX_MESH_COUNT];
 	unsigned int m_meshCount;
+
+	struct sparse_id_mask
+	{
+		uint32_t index : index_size,
+			generation : generation_size;
+	};
+
+	uint32_t m_denseToSparse[MAX_MESH_COUNT];
+	sparse_id_mask m_sparse_array[MAX_MESH_COUNT];
+
+	std::deque<uint8_t> m_open_ids;
+
+
 };
