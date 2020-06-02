@@ -37,6 +37,7 @@
 
 
 //Wir würden Sie bitten beide Implementierung zu überprüfen und uns die vor/nachteile von beiden zu erläutern
+//als dritte Möglichkeit hätten wir auch memcpy verwenden können, dazu würde ich Sie auch um Ihre Meinung bitten
 //In der Theorie unterscheiden sich beide nicht außer wie die MeshID in ihre 2 Teile zerlegt wird
 #ifdef UNION
 #include "RenderWorldUnion.hpp"
