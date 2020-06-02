@@ -27,6 +27,20 @@ struct Mesh
 	int dummy;
 };
 
+//Benutzte struct und union um sie unabhängig von der Klasse zu speichern
+struct id_struct
+{
+	uint32_t generation : 24,
+			 index      :  8;
+};
+
+//für einfachen Zugriff auf entweder die 2 einzelnen Werte oder die generelle MeshID
+union id_converter
+{
+	MeshID ID;
+	id_struct mask;
+};
+/////////
 
 // in our exercise, the RenderWorld only holds meshes, nothing more.
 // the RenderWorld implementation makes sure that after *each* operation its internal data structure has no holes,
@@ -149,17 +163,7 @@ public:
 
 private:
 	
-	struct id_struct
-	{
-		uint32_t generation : 24,
-		index : 8;
-	};
 
-	//für einfachen Zugriff auf entweder die 2 einzelnen Werte oder die generelle MeshID
-	union id_converter {
-		MeshID ID;
-		id_struct mask;
-	};
 
 	//Container um alle notwendigen Daten zu speichern, deque um auch den sparse_array so gepackt wie möglich zu halten
 	std::deque<uint8_t> m_open_ids;
