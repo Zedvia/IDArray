@@ -35,6 +35,9 @@
 
 #define UNION
 
+
+//Wir würden Sie bitten beide Implementierung zu überprüfen und uns die vor/nachteile von beiden zu erläutern
+//In der Theorie unterscheiden sich beide nicht außer wie die MeshID in ihre 2 Teile zerlegt wird
 #ifdef UNION
 #include "RenderWorldUnion.hpp"
 #else
