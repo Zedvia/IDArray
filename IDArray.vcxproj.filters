@@ -20,8 +20,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Hints.txt">
+    <ClInclude Include="RenderWorldUnion.hpp">
       <Filter>Source Files</Filter>
-    </Text>
+    </ClInclude>
+    <ClInclude Include="RenderWorldBitshift.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
