@@ -141,7 +141,8 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Hints.txt" />
+    <ClInclude Include="RenderWorldBitshift.hpp" />
+    <ClInclude Include="RenderWorldUnion.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
