@@ -23,20 +23,23 @@ struct Mesh
 	int dummy;
 };
 
-//Benutzte struct und union um sie unabhängig von der Klasse zu speichern
-struct id_struct
+namespace mask_management
 {
-	uint32_t generation : 24,
-			 index      :  8;
-};
+	//Benutzte struct und union um sie unabhängig von der Klasse zu speichern
+	struct id_struct
+	{
+		uint32_t generation : 24,
+				      index : 8;
+	};
 
-//für einfachen Zugriff auf entweder die 2 einzelnen Werte oder die generelle MeshID
-union id_converter
-{
-	MeshID ID;
-	id_struct mask;
-};
-/////////
+	//für einfachen Zugriff auf entweder die 2 einzelnen Werte oder die generelle MeshID
+	union id_converter
+	{
+		MeshID ID;
+		id_struct mask;
+	};
+}
+
 // in our exercise, the RenderWorld only holds meshes, nothing more.
 // the RenderWorld implementation makes sure that after *each* operation its internal data structure has no holes,
 // and contains Mesh instances which are stored contiguously in memory.
@@ -68,7 +71,7 @@ public:
 		m_open_ids.pop_front();
 
 		//Daten für sparse_array werden geschrieben: position im dense array und generation
-		id_struct mask{};
+		mask_management::id_struct mask{};
 		mask.index = m_meshCount;
 		mask.generation = m_sparse_array[free_id].generation;
 
@@ -76,13 +79,13 @@ public:
 
 		//dense to sparse array wird am index des meshes, welches das mesh auch im dense array hat,
 		//mit der id für den Eintrag im sparse array befüllt um Zugriff in beide Richtungen zu ermöglichen
-		m_denseToSparse[m_meshCount] = free_id;
+		m_dense_to_sparse[m_meshCount] = free_id;
 
 		// m_meshCount erhöhen damit neue Meshes an die richtige Stelle geaddet werden
 		m_meshCount++;
 
 		//MeshID wird mit der Generation und dem Index im Sparse Array befüllt
-		id_converter meshID{};
+		mask_management::id_converter meshID{};
 		meshID.mask.index = free_id;
 		meshID.mask.generation = mask.generation;
 
@@ -97,23 +100,23 @@ public:
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
 
 		// Struct generieren um auf index und generation zugreifen zu können
-		id_converter meshID{ id };
+		mask_management::id_converter meshID{ id };
 
 		// checken ob generation gleich
-		id_struct entry = m_sparse_array[meshID.mask.index];
+		mask_management::id_struct entry = m_sparse_array[meshID.mask.index];
 
 		if (entry.generation == meshID.mask.generation)
 		{
 			// mesh mit letzten im dense swappen um leere Einträge zu vermeiden
 			std::swap(m_meshes[entry.index], m_meshes[m_meshCount - 1]);
 			// in sparse für geswappten mesh index aktualisieren um Zugriff für geswapptes Element wieder zu ermöglichen
-			m_sparse_array[m_denseToSparse[m_meshCount - 1]].index = entry.index;
+			m_sparse_array[m_dense_to_sparse[m_meshCount - 1]].index = entry.index;
 			// in sparse generation erhöhen um die MeshID zu invalidieren
-			m_sparse_array[m_denseToSparse[meshID.mask.index]].generation++;
+			m_sparse_array[m_dense_to_sparse[meshID.mask.index]].generation++;
 			// sparse id freimachen damit sie wieder verwendet werden kann
 			m_open_ids.emplace_front(static_cast<uint8_t>(meshID.mask.index));
 			// denseToSparse aktualisieren um Mapping aktuell zu halten
-			std::swap(m_denseToSparse[m_meshCount - 1], m_denseToSparse[meshID.mask.index]);
+			std::swap(m_dense_to_sparse[m_meshCount - 1], m_dense_to_sparse[meshID.mask.index]);
 			// m_meshCount reduzieren damit neue Meshes an die richtige Stelle geaddet werden
 			m_meshCount--;
 		}
@@ -127,9 +130,9 @@ public:
 		// thoroughly comment *what* you do, and *why* you do it (in german or english).
 
 		// Struct generieren um auf index und generation zugreifen zu können
-		id_converter meshID{ id };
+		mask_management::id_converter meshID{ id };
 
-		id_struct entry = m_sparse_array[meshID.mask.index];
+		mask_management::id_struct entry = m_sparse_array[meshID.mask.index];
 
 		//Mesh nur zurückliefern wenn generation noch gleich ist, andernfalls wurde das Objekt mit dieser MeshID bereits gelöscht/ersetzt
 		if (entry.generation == meshID.mask.generation)
@@ -159,8 +162,8 @@ public:
 private:
 
 	//Container um alle notwendigen Daten zu speichern
-	id_struct m_sparse_array[MAX_MESH_COUNT];
-	uint32_t m_denseToSparse[MAX_MESH_COUNT];
+	mask_management::id_struct m_sparse_array[MAX_MESH_COUNT];
+	uint32_t m_dense_to_sparse[MAX_MESH_COUNT];
 
 	// DO NOT CHANGE!
 	// these two members are here to stay. see comments regarding Iterate().

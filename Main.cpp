@@ -1,45 +1,16 @@
-
 #include <cassert>
 #include <cstdint>
 
 
 
 
-// DO NOT CHANGE THE UNDERLYING TYPE!
-// our MeshID has 32 bits. you can use those bits for whatever purpose you see fit.
-// this is the only thing our user sees.
-//typedef uint32_t MeshID;
-
-
-// DO NOT CHANGE!
-// you can assume that we never store more than 256 entries.
-//static const unsigned int MAX_MESH_COUNT = 256;
-
-
-// DO NOT CHANGE!
-// your implementation needs to work with arbitrary types, whose layout we cannot change.
-// you can assume that all types you're going to deal with are PODs, like the Mesh here.
-/*struct Mesh
-{
-	// the mesh usually has several members (vertex buffer, index buffer, etc.).
-	// for our exercise we only use a dummy member. this is only used to check whether the implementation works.
-	int dummy;
-};
-*/
-
-
-
-// in our exercise, the RenderWorld only holds meshes, nothing more.
-// the RenderWorld implementation makes sure that after *each* operation its internal data structure has no holes,
-// and contains Mesh instances which are stored contiguously in memory.
-
-#define UNION
-
-
 //Wir würden Sie bitten beide Implementierung zu überprüfen und uns die vor/nachteile von beiden zu erläutern
 //als dritte Möglichkeit hätten wir auch memcpy verwenden können, dazu würde ich Sie auch um Ihre Meinung bitten
 //In der Theorie unterscheiden sich beide nicht außer wie die MeshID in ihre 2 Teile zerlegt wird
 //Uns ist bewusst, dass die Union Version undefined behaviour sein kann, es funktioniert aber mit dem VS2019 compiler
+
+#define UNION
+
 #ifdef UNION
 #include "RenderWorldUnion.hpp"
 #else
